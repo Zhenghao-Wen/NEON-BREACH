@@ -1,0 +1,19 @@
+{
+  "source": "three@0.181.2",
+  "generatedAt": "2026-10-07T11:32:59.597Z",
+  "modules": [
+    "postprocessing/EffectComposer.js",
+    "postprocessing/FXAAPass.js",
+    "postprocessing/MaskPass.js",
+    "postprocessing/OutputPass.js",
+    "postprocessing/Pass.js",
+    "postprocessing/RenderPass.js",
+    "postprocessing/ShaderPass.js",
+    "postprocessing/UnrealBloomPass.js",
+    "shaders/CopyShader.js",
+    "shaders/FXAAShader.js",
+    "shaders/LuminosityHighPassShader.js",
+    "shaders/OutputShader.js",
+    "utils/BufferGeometryUtils.js"
+  ]
+}

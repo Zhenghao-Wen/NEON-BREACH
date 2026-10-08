@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>NEON BREACH — 3D FPS</title>
+<link rel="stylesheet" href="/src/ui/style.css" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "/node_modules/three/build/three.module.js",
+    "three/addons/": "/node_modules/three/examples/jsm/",
+    "three/examples/jsm/": "/node_modules/three/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="app">
+  <canvas id="gl"></canvas>
+
+  <!-- ===================== HUD ===================== -->
+  <div id="hud" class="hidden">
+    <div id="crosshair">
+      <span class="ch ch-t"></span><span class="ch ch-b"></span>
+      <span class="ch ch-l"></span><span class="ch ch-r"></span>
+      <span class="ch-dot"></span>
+      <span id="hitmarker"></span>
+    </div>
+    <div id="spread-ring"></div>
+
+    <div id="damage-vignette"></div>
+    <div id="low-health"></div>
+
+    <div id="hud-top-left">
+      <div class="panel region-panel">
+        <div class="label">区域 / SECTOR</div>
+        <div id="region-name">—</div>
+      </div>
+      <div class="panel objective-panel">
+        <div class="label">任务 / OBJECTIVE</div>
+        <div id="objective">清除所有敌对单位</div>
+      </div>
+    </div>
+
+    <div id="hud-top-right">
+      <div class="panel stat-panel">
+        <div class="stat-row"><span class="label">波次 WAVE</span><span id="wave-num">1</span></div>
+        <div class="stat-row"><span class="label">敌人 LEFT</span><span id="enemy-count">0</span></div>
+        <div class="stat-row"><span class="label">得分 SCORE</span><span id="score">0</span></div>
+        <div class="stat-row"><span class="label">信用 CREDITS</span><span id="credits">0</span></div>
+      </div>
+      <div id="combo" class="combo hidden"><span id="combo-x">x1.0</span><div class="combo-bar"><i id="combo-fill"></i></div></div>
+    </div>
+
+    <div id="hud-bottom-left">
+      <div class="vitals">
+        <div class="vital health">
+          <div class="icon">✚</div>
+          <div class="bar-wrap"><i id="health-fill"></i><b id="health-num">100</b></div>
+        </div>
+        <div class="vital armor">
+          <div class="icon">◈</div>
+          <div class="bar-wrap"><i id="armor-fill"></i><b id="armor-num">0</b></div>
+        </div>
+        <div class="vital stamina">
+          <div class="icon">⚡</div>
+          <div class="bar-wrap"><i id="stamina-fill"></i><b id="stamina-num"></b></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="hud-bottom-right">
+      <div id="weapon-name">PULSE RIFLE</div>
+      <div id="ammo">
+        <span id="mag">30</span><span class="sep">/</span><span id="reserve">240</span>
+      </div>
+      <div id="reload-hint" class="hidden">按 <kbd>R</kbd> 换弹</div>
+      <div id="weapon-slots"></div>
+    </div>
+
+    <div id="killfeed"></div>
+    <div id="damage-indicators"></div>
+    <div id="pickup-toast"></div>
+    <div id="minimap-wrap">
+      <canvas id="minimap" width="220" height="220"></canvas>
+      <div class="mm-label">TACTICAL MAP</div>
+    </div>
+    <div id="boss-bar" class="hidden">
+      <div class="boss-name" id="boss-name">WARDEN</div>
+      <div class="boss-track"><i id="boss-fill"></i></div>
+    </div>
+    <div id="center-msg"></div>
+    <div id="slowmo-tag" class="hidden">◈ 时间减缓 ◈</div>
+  </div>
+
+  <!-- ===================== SHOP ===================== -->
+  <div id="shop" class="overlay hidden">
+    <div class="shop-box">
+      <header>
+        <h2>军械库 / ARMORY</h2>
+        <div class="shop-meta">
+          <span>波次 <b id="shop-wave">1</b></span>
+          <span>信用点 <b id="shop-credits">0</b></span>
+          <span id="shop-timer">下一波 30s</span>
+        </div>
+      </header>
+      <div id="shop-grid" class="shop-grid"></div>
+      <footer>
+        <button id="shop-start" class="btn primary">开始下一波 (SPACE)</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ===================== MENUS ===================== -->
+  <div id="menu" class="overlay">
+    <div class="menu-inner">
+      <h1 class="title">NEON<span>BREACH</span></h1>
+      <p class="subtitle">一名潜入者在废弃的轨道研究站里，对抗失控的生化防卫系统。</p>
+      <div class="menu-buttons">
+        <button id="btn-play" class="btn primary">开始潜入 / DEPLOY</button>
+        <button id="btn-howto" class="btn">操作说明 / CONTROLS</button>
+        <button id="btn-settings" class="btn">设置 / SETTINGS</button>
+      </div>
+      <div class="menu-foot">
+        <span>WASD 移动 · 鼠标 瞄准 · 左键 射击 · R 换弹 · 1-6 切换武器 · SHIFT 疾跑 · C 蹲下 · Q 手雷</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="howto" class="overlay hidden">
+    <div class="menu-inner narrow">
+      <h2>操作说明 / CONTROLS</h2>
+      <table class="keys">
+        <tr><td>W A S D</td><td>移动 Move</td></tr>
+        <tr><td>鼠标 Mouse</td><td>瞄准 Look</td></tr>
+        <tr><td>左键 LMB</td><td>射击 Fire</td></tr>
+        <tr><td>右键 RMB</td><td>瞄准镜 ADS</td></tr>
+        <tr><td>R</td><td>换弹 Reload</td></tr>
+        <tr><td>1 – 6</td><td>切换武器 Weapons</td></tr>
+        <tr><td>Q</td><td>投掷手雷 Grenade</td></tr>
+        <tr><td>F</td><td>近战 / 处决 Melee</td></tr>
+        <tr><td>SHIFT</td><td>疾跑 Sprint</td></tr>
+        <tr><td>CTRL / C</td><td>蹲下 Crouch</td></tr>
+        <tr><td>SPACE</td><td>跳跃 Jump</td></tr>
+        <tr><td>E</td><td>交互 Interact</td></tr>
+        <tr><td>TAB</td><td>战术地图 Map</td></tr>
+        <tr><td>ESC</td><td>暂停 Pause</td></tr>
+      </table>
+      <div class="tips">
+        <b>提示：</b> 爆头造成 2.4 倍伤害；连续击杀可叠加连击倍率；护甲优先吸收伤害；
+        波次之间进入军械库购买武器、弹药与升级。
+      </div>
+      <button class="btn primary" data-close="howto">返回 / BACK</button>
+    </div>
+  </div>
+
+  <div id="settings" class="overlay hidden">
+    <div class="menu-inner narrow">
+      <h2>设置 / SETTINGS</h2>
+      <div id="settings-body"></div>
+      <button class="btn primary" data-close="settings">返回 / BACK</button>
+    </div>
+  </div>
+
+  <div id="pause" class="overlay hidden">
+    <div class="menu-inner narrow">
+      <h2>已暂停 / PAUSED</h2>
+      <div class="pause-stats" id="pause-stats"></div>
+      <div class="menu-buttons">
+        <button id="btn-resume" class="btn primary">继续 / RESUME</button>
+        <button id="btn-pause-settings" class="btn">设置 / SETTINGS</button>
+        <button id="btn-quit" class="btn danger">放弃任务 / ABORT</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="gameover" class="overlay hidden">
+    <div class="menu-inner narrow">
+      <h2 class="go-title">任务失败 / MISSION FAILED</h2>
+      <div id="go-stats" class="pause-stats"></div>
+      <div class="menu-buttons">
+        <button id="btn-retry" class="btn primary">再次潜入 / RETRY</button>
+        <button id="btn-menu" class="btn">返回主菜单 / MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="victory" class="overlay hidden">
+    <div class="menu-inner narrow">
+      <h2 class="win-title">撤离成功 / EXTRACTION COMPLETE</h2>
+      <div id="win-stats" class="pause-stats"></div>
+      <div class="menu-buttons">
+        <button id="btn-continue-endless" class="btn primary">继续无尽模式 / ENDLESS</button>
+        <button id="btn-win-menu" class="btn">返回主菜单 / MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== LOADING ===================== -->
+  <div id="loading">
+    <div class="load-inner">
+      <h1 class="title small">NEON<span>BREACH</span></h1>
+      <div class="load-bar"><i id="load-fill"></i></div>
+      <div id="load-text">正在生成程序化贴图…</div>
+      <div id="load-sub">PROCEDURAL TEXTURE SYNTHESIS</div>
+    </div>
+  </div>
+
+  <div id="start-prompt" class="hidden">
+    <div class="click-box">点击画面进入 <b>指针锁定</b> 模式<br /><small>CLICK TO LOCK POINTER</small></div>
+  </div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

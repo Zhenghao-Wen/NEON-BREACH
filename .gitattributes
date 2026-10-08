@@ -1,0 +1,23 @@
+# Normalise line endings: source is authored with LF, and .js/.mjs/.css/.html
+# must stay LF so the served bytes are identical on every platform.
+* text=auto eol=lf
+
+*.js    text eol=lf
+*.mjs   text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+
+# Windows launchers are more useful with CRLF in Notepad / cmd
+*.bat   text eol=crlf
+*.ps1   text eol=crlf
+
+# Binary
+*.png   binary
+*.jpg   binary
+*.ico   binary
+
+# The vendored three.js tree is third-party; keep it out of language stats
+threejs/** linguist-vendored
+node_modules/** linguist-vendored

@@ -1,0 +1,29 @@
+{
+  "name": "neon-breach",
+  "private": true,
+  "version": "1.0.0",
+  "description": "NEON BREACH — a fully offline 3D first-person shooter. Procedural textures, procedural audio, zero build step.",
+  "type": "module",
+  "scripts": {
+    "start": "node tools/launch.mjs",
+    "start:noopen": "node tools/launch.mjs --no-open",
+    "start:vendor": "node tools/launch.mjs --vendor",
+    "dev": "node tools/serve.mjs",
+    "serve": "node tools/serve.mjs --port 8080",
+    "serve:vendor": "node tools/serve.mjs --vendor",
+    "vendor": "node tools/vendor.mjs",
+    "verify": "node tools/verify.mjs && node tools/audit-served.mjs && node tools/simulate.mjs && node tools/probe-reach.mjs && node tools/audit-shaders.mjs && node tools/audit-ui.mjs",
+    "verify:static": "node tools/verify.mjs",
+    "verify:served": "node tools/audit-served.mjs",
+    "verify:sim": "node tools/simulate.mjs",
+    "verify:nav": "node tools/probe-reach.mjs",
+    "verify:shaders": "node tools/audit-shaders.mjs",
+    "verify:ui": "node tools/audit-ui.mjs"
+  },
+  "dependencies": {
+    "three": "^0.181.0"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^24.0.0"
+  }
+}

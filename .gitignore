@@ -1,0 +1,18 @@
+# Dependencies are installed with `npm install`; the vendored three.js tree is
+# committed instead, so the game can run without a package manager.
+node_modules/
+
+# Local npm cache (used when the global cache is not writable)
+.npm-cache/
+
+# Editor / OS noise
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+
+# Logs and scratch files produced while running the server or the audits
+*.log
+.chrome-profile/
+.tmp/
